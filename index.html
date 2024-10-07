@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js Trees</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <script>
+        let trees = [];
+        let cols, rows; // Number of columns and rows
+        let maxTreesPerRow = 2; // Maximum number of trees per row
+        let treeSpacing = 250; // Space between trees
+        let minY = 300; // Minimum y-coordinate for tree placement
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            cols = Math.floor(width / treeSpacing);
+            rows = Math.floor((height - minY) / treeSpacing); // Adjust rows based on new minY
+            
+            // Create trees in a grid formation
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    let x = i * treeSpacing + treeSpacing / 2;
+                    let y = minY + j * treeSpacing + random(0, 15);
+                    trees.push(new Tree(x, y, random(TWO_PI)));
+                }
+            }
+        }
+
+        function draw() {
+            background(51);
+            
+            // Update and draw each tree
+            for (let i = trees.length - 1; i >= 0; i--) {
+                trees[i].update();
+                trees[i].display();
+                if (trees[i].alpha <= 0) {
+                    trees.splice(i, 1); // Remove trees that have faded away
+                }
+            }
+            
+            // Randomly create new trees if needed
+            while (trees.length < (cols * rows)) {
+                let x = random(cols) * treeSpacing + treeSpacing / 2;
+                let y = minY + random(0, 50); // Random height for new trees
+                trees.push(new Tree(x, y, random(TWO_PI)));
+            }
+        }
+
+        class Tree {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.len = 100;
+                this.alpha = 255; // Full opacity
+                this.angleIncrement = 0.01; // Speed of angle increase
+                this.fadeSpeed = random(1, 5); // Random fading speed
+            }
+            
+            update() {
+                this.angle += this.angleIncrement;
+                if (this.angle > TWO_PI) {
+                    this.angle = 0; // Reset angle when it exceeds TWO_PI
+                }
+                this.alpha -= this.fadeSpeed; // Adjust this value to change the fading speed
+                if (this.alpha < 0) {
+                    this.alpha = 0;
+                }
+            }
+            
+            display() {
+                push();
+                translate(this.x, this.y);
+                stroke(255, this.alpha); // Set stroke color with alpha
+                this.branch(this.len); // Call the branch method on this instance
+                pop();
+            }
+            
+            branch(len) {
+                line(0, 0, 0, -len);
+                translate(0, -len);
+                if (len > 4) {
+                    push();
+                    rotate(this.angle);
+                    this.branch(len * 0.67); // Call the branch method on this instance
+                    pop();
+                    
+                    push();
+                    rotate(-this.angle);
+                    this.branch(len * 0.67); // Call the branch method on this instance
+                    pop();
+                }
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            cols = Math.floor(width / treeSpacing);
+            rows = Math.floor((height - minY) / treeSpacing); // Adjust rows based on new minY
+            trees = [];
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    let x = i * treeSpacing + treeSpacing / 2;
+                    let y = minY + j * treeSpacing + random(0, 50);
+                    trees.push(new Tree(x, y, random(TWO_PI)));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
